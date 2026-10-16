@@ -25532,6 +25532,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogue:
     name: tall rectangle
+    talkingSpeed: 0
     sentences:
     - haha im so tall
     - ur so short
