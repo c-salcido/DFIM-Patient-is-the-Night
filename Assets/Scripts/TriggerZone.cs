@@ -16,9 +16,14 @@ public class TriggerZone : MonoBehaviour
     public UnityEvent onTriggerEnter;
     public UnityEvent onTriggerExit;
 
-    private void onTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log(collision.tag);
+
+
         if (alreadyEntered) { return; }
+
+        
 
         if (!string.IsNullOrEmpty(collisionTag) && !collision.CompareTag(collisionTag))
         return;
