@@ -8,9 +8,10 @@ using UnityEngine;
 public class Dialogue 
 {
     public string name;
+    public float talkingSpeed;
 
     [TextArea(3,10)]
-
-
     public string[] sentences;
+
+    
 }

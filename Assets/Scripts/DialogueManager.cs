@@ -11,28 +11,34 @@ public class DialogueManager : MonoBehaviour
     private Queue<string> sentences;
 
     //ui components
+
     public GameObject dialogueBox;
+    public Animator animator;
     public TextMeshProUGUI name;
     public TextMeshProUGUI dialogueText;
+    
 
 
     // Start is called before the first frame update
     void Start()
     {
+
         dialogueBox.SetActive(false);
+        
         if (Instance == null) Instance = this; //allows us to access this from anywhere
         sentences = new Queue<string>();
+        
     }
 
 
     public void StartDialogue(Dialogue dialogue)
     {
-
+        
         dialogueBox.SetActive(true);
-
-        Debug.Log("starting converstation with" + dialogue.name);
+        animator.SetBool("isOpen", true);
         name.text = dialogue.name;
         sentences.Clear();
+        
 
 
         foreach (string sentence in dialogue.sentences)
@@ -51,15 +57,24 @@ public class DialogueManager : MonoBehaviour
 
         }
         string sentence = sentences.Dequeue();
-        dialogueText.text = sentence;
-        Debug.Log(sentence);
+        StopAllCoroutines();
+        StartCoroutine(TypeSentence(sentence));
 
+    }
+
+    IEnumerator TypeSentence (string sentence)
+    {
+        dialogueText.text = "";
+        foreach (char letter in sentence.ToCharArray())
+        {
+            dialogueText.text += letter;
+            yield return null;
+        }
     }
 
     void EndDialogue()
     {
-        Debug.Log("End of Conversation");
-
+        animator.SetBool("isOpen", false);
         dialogueBox.SetActive(false);
     }
 
