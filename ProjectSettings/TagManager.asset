@@ -39,6 +39,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Vista
+    uniqueID: 3652124891
+    locked: 0
   - name: Background
     uniqueID: 3283195751
     locked: 0
