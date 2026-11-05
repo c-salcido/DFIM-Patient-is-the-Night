@@ -29,6 +29,11 @@ public class CharacterController2D : MonoBehaviour
 	private float prevVelocityX = 0f;
 	private bool canCheck = false; //For check if player is wallsliding
 
+
+	//testing for roll 
+	private bool changedHeight = false;
+
+
 	public float life = 10f; //Life of the player
 	public bool invincible = false; //If player can die
 	private bool canMove = true; //If player can move
@@ -143,6 +148,25 @@ public class CharacterController2D : MonoBehaviour
 			if (isDashing)
 			{
 				m_Rigidbody2D.velocity = new Vector2(transform.localScale.x * m_DashForce, 0);
+
+				//reduce size during dash to roll under object and stop gravity
+
+				m_Rigidbody2D.gravityScale = 0f;
+
+				Vector3 tempScale = transform.localScale;
+				tempScale.y = 0.5f ;
+				transform.localScale = tempScale;
+
+				if (changedHeight == false)
+				{
+					Vector3 tempPosition = transform.localPosition;
+				tempPosition.y -= 0.5f ;
+				transform.localPosition = tempPosition;
+				changedHeight = true;
+
+				}
+				
+
 			}
 			//only control the player if grounded or airControl is turned on
 			else if (m_Grounded || m_AirControl)
@@ -287,10 +311,23 @@ public class CharacterController2D : MonoBehaviour
 		animator.SetBool("IsDashing", true);
 		isDashing = true;
 		canDash = false;
-		yield return new WaitForSeconds(0.1f);
+		yield return new WaitForSeconds(0.4f);
 		isDashing = false;
+
+		//return to normal size
+		Vector3 backToNormalScale = transform.localScale;
+		backToNormalScale.y = 1.0f ;
+		transform.localScale = backToNormalScale;
+		m_Rigidbody2D.gravityScale = 5f;
+
 		yield return new WaitForSeconds(0.5f);
+
+		//changedHeight = false;
 		canDash = true;
+
+		
+		
+		
 	}
 
 	IEnumerator Stun(float time) 
