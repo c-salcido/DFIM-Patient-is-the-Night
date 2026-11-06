@@ -16,7 +16,12 @@ public class SwitchCam : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
+
+            
             CameraManager.SwitchCamera(thisCamera);
+             thisCamera.Follow = other.transform;
+            
+            
         }
     }
 }
