@@ -18,7 +18,6 @@ public class CameraRegister : MonoBehaviour
 
     void Start()
     {
-        FollowPlayer();
         
 
 
