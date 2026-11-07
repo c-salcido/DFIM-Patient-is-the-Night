@@ -12,7 +12,7 @@ public class Dialogue
 
     public AudioClip audio;
     public Animator animator;
-    public string animationName;
+    public string animation;
 
     [TextArea(3,10)]
     public string[] sentences;
