@@ -10,6 +10,10 @@ public class Dialogue
     public string name;
     public float talkingSpeed;
 
+    public AudioClip audio;
+    public Animator animator;
+    public string animationName;
+
     [TextArea(3,10)]
     public string[] sentences;
 

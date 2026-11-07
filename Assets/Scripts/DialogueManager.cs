@@ -17,7 +17,7 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI name;
     public TextMeshProUGUI dialogueText;
 
-    public Animator characterAnimator;
+    
     
 
 

@@ -3654,6 +3654,9 @@ MonoBehaviour:
   dialogue:
     name: 
     talkingSpeed: 0
+    audio: {fileID: 0}
+    animator: {fileID: 0}
+    animationName: 
     sentences:
     - im way more interesting than the other guy
 --- !u!61 &459096895
@@ -30690,7 +30693,6 @@ MonoBehaviour:
   animator: {fileID: 553242696}
   name: {fileID: 624990760}
   dialogueText: {fileID: 1465613657}
-  characterAnimator: {fileID: 0}
 --- !u!4 &814546654
 Transform:
   m_ObjectHideFlags: 0
@@ -64589,6 +64591,9 @@ MonoBehaviour:
   dialogue:
     name: 
     talkingSpeed: 0
+    audio: {fileID: 0}
+    animator: {fileID: 0}
+    animationName: 
     sentences:
     - Her sister's GameCube. She always makes her be player 2
     - what was she playing today, I wonder...
@@ -140256,6 +140261,14 @@ PrefabInstance:
     - target: {fileID: 1410756236943757343, guid: 743151898799146c3a3571d32d4344dc, type: 3}
       propertyPath: dialogue.name
       value: Kitty
+      objectReference: {fileID: 0}
+    - target: {fileID: 1410756236943757343, guid: 743151898799146c3a3571d32d4344dc, type: 3}
+      propertyPath: characterAnimator
+      value: 
+      objectReference: {fileID: 1891086749}
+    - target: {fileID: 1410756236943757343, guid: 743151898799146c3a3571d32d4344dc, type: 3}
+      propertyPath: talkAnimationName
+      value: catTalking
       objectReference: {fileID: 0}
     - target: {fileID: 1410756236943757343, guid: 743151898799146c3a3571d32d4344dc, type: 3}
       propertyPath: dialogue.sentences.Array.data[0]
