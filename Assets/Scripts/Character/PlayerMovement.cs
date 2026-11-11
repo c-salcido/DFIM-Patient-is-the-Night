@@ -16,17 +16,14 @@ public class PlayerMovement : MonoBehaviour
 
 
     //movement vars
-    public float HorizontalVelocity {get; private set;}
+    private Vector2 moveVelocity;
     private bool isFacingRight;
 
     //collision vars
     private RaycastHit2D groundHit;
     private RaycastHit2D headHit;
-    private RaycastHit2D wallHit;
-    private RaycastHit2D lastWallHit;
     private bool isGrounded;
     private bool bumpedHead;
-    private bool isTouchingWall;
 
     //jump vars
     public float VerticalVelocity { get; private set;}
@@ -49,38 +46,6 @@ public class PlayerMovement : MonoBehaviour
     //coyote time vars
     private float coyoteTimer;
 
-    //wall slide
-    private bool isWallSliding;
-    private bool isWallSlideFalling;
-
-    //wall jump
-    private bool useWallJumpMoveStats;
-    private bool isWallJumping;
-    private float wallJumpTime;
-    private bool isWallJumpFastFalling;
-    private bool isWallJumpFalling;
-    private float wallJumpFastFallTime;
-    private float wallJumpFastFallReleaseSpeed;
-
-    private float wallJumpPostBufferTimer;
-
-    private float wallJumpApexPoint;
-    private float timePastWallJumpApexThreshold;
-    private bool isPastWallJumpApexThreshold;
-
-
-
-    //dash
-    private bool isDashing;
-    private bool isAirDashing;
-    private float dashTimer;
-    private float dashOnGroundTimer;
-    private int numberOfDashesUsed;
-    private Vector2 dashDirection;
-    private bool isDashFastFalling;
-    private float dashFastFallTime;
-    private float dashFastFallReleaseSpeed;
-
 
     private void Awake()
     {
@@ -91,7 +56,6 @@ public class PlayerMovement : MonoBehaviour
     {
         CountTimers();
         JumpChecks();
-        LandCheck();
 
     }
 
@@ -99,7 +63,6 @@ public class PlayerMovement : MonoBehaviour
     {
         CollisionChecks();
         Jump();
-        Fall();
         if (isGrounded)
         {
             Move(MoveStats.GroundAcceleration, MoveStats.GroundDecceleration, InputManager.Movement);
@@ -109,42 +72,33 @@ public class PlayerMovement : MonoBehaviour
             Move(MoveStats.AirAcceleration, MoveStats.AirDecceleration, InputManager.Movement);
 
         }
-        ApplyVelocity();
-    }
-
-    private void ApplyVelocity()
-    {
-        //clamp fall speed
-        VerticalVelocity = Mathf.Clamp(VerticalVelocity, -MoveStats.MaxFallSpeed, 50f);
-        rb.velocity = new Vector2(HorizontalVelocity, VerticalVelocity);
-
     }
 
 #region movement
 
     private void Move( float acceleraction, float decceleration, Vector2 moveInput)
     {
-        if (Mathf.Abs(moveInput.x) >= MoveStats.MoveThreshold)
+        if (moveInput != Vector2.zero)
         {
             //check if she needs to turn
             TurnCheck(moveInput);
     
-            float targetVelocity = 0f;
+            Vector2 targetVelocity = Vector2.zero;
             if (InputManager.RunIsHeld)
             {
-                targetVelocity = moveInput.x * MoveStats.MaxRunSpeed;
+                targetVelocity = new Vector2(moveInput.x, 0f) * MoveStats.MaxRunSpeed;
             }
-            else { targetVelocity =  moveInput.x * MoveStats.MaxWalkSpeed;}
+            else { targetVelocity = new Vector2(moveInput.x,0f)* MoveStats.MaxWalkSpeed;}
 
 
-            HorizontalVelocity = Mathf.Lerp(HorizontalVelocity,targetVelocity, acceleraction * Time.fixedDeltaTime);
+            moveVelocity = Vector2.Lerp(moveVelocity,targetVelocity, acceleraction * Time.fixedDeltaTime);
 
-            
+            rb.velocity = new Vector2(moveVelocity.x, rb.velocity.y);
         }
-        else if (Mathf.Abs(moveInput.x) <MoveStats.MoveThreshold)
+        else if (moveInput == Vector2.zero)
         {
-            HorizontalVelocity = Mathf.Lerp(HorizontalVelocity,0f, decceleration * Time.fixedDeltaTime);
-            
+            moveVelocity = Vector2.Lerp(moveVelocity,Vector2.zero, decceleration * Time.fixedDeltaTime);
+            rb.velocity = new Vector2(moveVelocity.x, rb.velocity.y);
 
         }
     
@@ -183,38 +137,6 @@ public class PlayerMovement : MonoBehaviour
 
 #endregion
 
-#region Land/Fall
-
-private void LandCheck()
-{
-    if((isJumping || isFalling) && isGrounded && VerticalVelocity <= 0f)
-    {
-        isJumping = false;
-        isFalling = false;
-        isFastFalling = false;
-        fastFallTime = 0f;
-        isPastApexThreshold = false;
-        numberOfJumpsUsed = 0;
-        VerticalVelocity = Physics2D.gravity.y;
-    }
-}
-
-private void Fall()
-{
-//normal gravity while falling
-    if (!isGrounded && !isJumping)
-    {
-        if(!isFalling)
-        {
-            isFalling = true;
-        }
-        VerticalVelocity += MoveStats.Gravity * Time.fixedDeltaTime;
-
-    }
-}
-
-
-#endregion
 #region Jump
 
 private void JumpChecks()
@@ -280,7 +202,17 @@ private void JumpChecks()
         InitiateJump(2);
         isFastFalling = false;
     }
-  
+    //landed
+    if ((isJumping || isFalling) && isGrounded &&VerticalVelocity <=0f)
+    {
+        isJumping = false;
+        isFalling = false;
+        isFastFalling = false;
+        fastFallTime = 0f;
+        isPastApexThreshold = false;
+        numberOfJumpsUsed = 0;
+        VerticalVelocity = Physics2D.gravity.y;
+    }
 
 }
 
@@ -333,7 +265,7 @@ private void Jump()
                 }
             }
             //gravity on ascending but not past apex threshold 
-            else if (!isFastFalling)
+            else
             {
                 VerticalVelocity += MoveStats.Gravity * Time.fixedDeltaTime;
                 if(isPastApexThreshold)
@@ -373,10 +305,21 @@ private void Jump()
         }
         fastFallTime += Time.fixedDeltaTime;
     }
-    
-    }
-    
+    //normal gravity while falling
+    if (!isGrounded && !isJumping)
+    {
+        if(!isFalling)
+        {
+            isFalling = true;
+        }
+        VerticalVelocity += MoveStats.Gravity * Time.fixedDeltaTime;
 
+    }
+    //clamp fall speed
+    VerticalVelocity = Mathf.Clamp(VerticalVelocity, -MoveStats.MaxFallSpeed, 50f);
+
+    rb.velocity = new Vector2(rb.velocity.x, VerticalVelocity);
+}
  private void CountTimers()
     {
         jumpBufferTimer -= Time.deltaTime;
