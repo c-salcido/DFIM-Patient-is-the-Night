@@ -92,6 +92,8 @@ public class PlayerMovement : MonoBehaviour
         CountTimers();
         JumpChecks();
         LandCheck();
+        WallJumpCheck();
+        WallSlideCheck();
 
     }
 
@@ -100,13 +102,25 @@ public class PlayerMovement : MonoBehaviour
         CollisionChecks();
         Jump();
         Fall();
+        WallSlide();
+        WallJump();
         if (isGrounded)
         {
             Move(MoveStats.GroundAcceleration, MoveStats.GroundDecceleration, InputManager.Movement);
         }
         else
         {
-            Move(MoveStats.AirAcceleration, MoveStats.AirDecceleration, InputManager.Movement);
+            //wall jumping
+            if(useWallJumpMoveStats)
+            {
+                Move(MoveStats.GroundAcceleration, MoveStats.GroundDecceleration, InputManager.Movement);
+            }
+            //airborne
+            else
+            {
+                Move(MoveStats.AirAcceleration, MoveStats.AirDecceleration, InputManager.Movement);
+            }
+            
 
         }
         ApplyVelocity();
@@ -114,8 +128,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void ApplyVelocity()
     {
-        //clamp fall speed
+        if(!isDashing)
+        {
+            //clamp fall speed
         VerticalVelocity = Mathf.Clamp(VerticalVelocity, -MoveStats.MaxFallSpeed, 50f);
+
+        }
+        else
+        {
+            VerticalVelocity = Mathf.Clamp(VerticalVelocity,-50f, 50f);
+
+        }
+        
         rb.velocity = new Vector2(HorizontalVelocity, VerticalVelocity);
 
     }
@@ -124,8 +148,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move( float acceleraction, float decceleration, Vector2 moveInput)
     {
-        if (Mathf.Abs(moveInput.x) >= MoveStats.MoveThreshold)
+        if(!isDashing)
         {
+            if (Mathf.Abs(moveInput.x) >= MoveStats.MoveThreshold)
+            {
             //check if she needs to turn
             TurnCheck(moveInput);
     
@@ -136,17 +162,15 @@ public class PlayerMovement : MonoBehaviour
             }
             else { targetVelocity =  moveInput.x * MoveStats.MaxWalkSpeed;}
 
-
-            HorizontalVelocity = Mathf.Lerp(HorizontalVelocity,targetVelocity, acceleraction * Time.fixedDeltaTime);
-
-            
-        }
+            HorizontalVelocity = Mathf.Lerp(HorizontalVelocity,targetVelocity, acceleraction * Time.fixedDeltaTime);   
+            }
         else if (Mathf.Abs(moveInput.x) <MoveStats.MoveThreshold)
-        {
+            {
             HorizontalVelocity = Mathf.Lerp(HorizontalVelocity,0f, decceleration * Time.fixedDeltaTime);
-            
+            }
 
         }
+        
     
     }
 
@@ -187,22 +211,28 @@ public class PlayerMovement : MonoBehaviour
 
 private void LandCheck()
 {
-    if((isJumping || isFalling) && isGrounded && VerticalVelocity <= 0f)
+    if((isJumping || isFalling || isWallJumpFalling ||isWallJumping ||isWallSlideFalling || isWallSliding ||isDashFastFalling) && isGrounded && VerticalVelocity <= 0f)
     {
-        isJumping = false;
-        isFalling = false;
-        isFastFalling = false;
-        fastFallTime = 0f;
-        isPastApexThreshold = false;
+        ResetJumpValues();
+        StopWallSlide();
+        ResetWallJumpValues();
+        ResetDashes();
         numberOfJumpsUsed = 0;
         VerticalVelocity = Physics2D.gravity.y;
+
+        if (isDashFastFalling && isGrounded)
+        {
+            ResetDashValues();
+            return;
+        }
+        ResetDashValues();
     }
 }
 
 private void Fall()
 {
 //normal gravity while falling
-    if (!isGrounded && !isJumping)
+    if (!isGrounded && !isJumping && !isWallSliding&& /* isWallJumping &&*/ !isDashing && !isDashFastFalling)
     {
         if(!isFalling)
         {
@@ -215,14 +245,87 @@ private void Fall()
 
 
 #endregion
+#region Wall Slide
+
+
+private void WallSlideCheck()
+{ 
+    if(isTouchingWall && !isGrounded && !isDashing)
+    {
+        if (VerticalVelocity <0f && !isWallSliding)
+        {
+            ResetJumpValues();
+            ResetWallJumpValues();
+            ResetDashValues();
+            if(MoveStats.ResetDashOnWallSlide)
+            {
+                ResetDashes();
+            }
+
+            isWallSlideFalling = false;
+            isWallSliding = true;
+
+            if (MoveStats.ResetJumpsOnWallSlide)
+            {
+                numberOfJumpsUsed = 0;
+            }
+        }
+    }
+    else if (isWallSliding && !isTouchingWall && !isGrounded && !isWallSlideFalling)
+    {
+        isWallSlideFalling = true;
+        StopWallSlide();
+    }
+    else
+    { 
+        StopWallSlide();
+    } 
+
+}
+
+private void StopWallSlide()
+{ 
+    if(isWallSliding)
+    {
+        numberOfJumpsUsed ++;
+        isWallSliding = false;
+    }
+}
+private void WallSlide()
+{
+    if(isWallSliding)
+    {
+        VerticalVelocity = Mathf.Lerp(VerticalVelocity, -MoveStats.WallSlideSpeed, MoveStats.WallSlideDeccelerationSpeed * Time.fixedDeltaTime);
+    }
+
+}
+
+#endregion
 #region Jump
 
+private void ResetJumpValues()
+{
+    isJumping = false;
+    isFalling = false;
+    isFastFalling = false;
+    fastFallTime = 0f;
+    isPastApexThreshold = false;
+
+}
 private void JumpChecks()
 {
 
     //when we press jump button
     if (InputManager.JumpWasPressed)
     {
+        if(isWallSlideFalling && wallJumpPostBufferTimer >= 0f)
+        {
+            return;
+        }
+        else if (isWallSliding ||(isTouchingWall&&!isGrounded))
+        {
+            return;
+        }
        
         jumpBufferTimer = MoveStats.JumpBufferTime;
         jumpReleasedDuringBuffer = false;
@@ -267,15 +370,18 @@ private void JumpChecks()
     }
 
     //double jump
-
-    else if (jumpBufferTimer >0f && isJumping && numberOfJumpsUsed < MoveStats.NumberOfJumpsAllowed)
+    else if (jumpBufferTimer >0f && (isJumping|| isWallJumping|| isWallSlideFalling|| isAirDashing|| isDashFastFalling) && !isTouchingWall && numberOfJumpsUsed < MoveStats.NumberOfJumpsAllowed)
     {
         isFastFalling = false;
         InitiateJump(1);
+        if(isDashFastFalling)
+        {
+            isDashFastFalling = false;
+        }
 
     }
     //air jump after coyote time lapsed
-    else if (jumpBufferTimer > 0f && isFalling && numberOfJumpsUsed < MoveStats.NumberOfJumpsAllowed - 1)
+    else if (jumpBufferTimer > 0f && isFalling && !isWallSlideFalling && numberOfJumpsUsed < MoveStats.NumberOfJumpsAllowed - 1)
     {
         InitiateJump(2);
         isFastFalling = false;
@@ -290,6 +396,7 @@ private void InitiateJump(int numberOfJumpsUsed)
     {
         isJumping = true;
     }
+    ResetWallJumpValues();
     jumpBufferTimer = 0f;
     numberOfJumpsUsed += numberOfJumpsUsed;
     VerticalVelocity = MoveStats.InitialJumpVelocity;
@@ -377,18 +484,215 @@ private void Jump()
     }
     
 
+
+
+#endregion
+#region Timers
  private void CountTimers()
     {
+        //jump buffers
         jumpBufferTimer -= Time.deltaTime;
+
+        //jump coyote time
         if (!isGrounded)
         {
             coyoteTimer -= Time.deltaTime;
         }
         else{ coyoteTimer = MoveStats.JumpCoyoteTime;}
+
+        //wall jump buffer tier
+        if(!ShouldApplyPostWallJumpBuffer())
+        {
+            wallJumpPostBufferTimer -= Time.deltaTime;
+        }
+    }
+#endregion
+#region Wall jump
+
+private void WallJumpCheck()
+{
+    if(ShouldApplyPostWallJumpBuffer())
+    {
+        wallJumpPostBufferTimer = MoveStats.WallJumpPostBufferTime;
+    }
+    //wall jump fast falling
+    if(InputManager.JumpWasReleased && !isWallSliding && !isTouchingWall && isWallJumping)
+    {
+        if(VerticalVelocity >0f)
+        {
+            if(isPastWallJumpApexThreshold)
+            {
+                isPastWallJumpApexThreshold = false;
+                isWallJumpFastFalling = true;
+                wallJumpFastFallTime = MoveStats.TimeForUpwardsCancel;
+                VerticalVelocity = 0f;
+            }
+            else
+            {
+                isWallJumpFalling = true;
+                wallJumpFastFallReleaseSpeed = VerticalVelocity;
+
+            }
+        }
+    }
+    //actual jump with post wall jump buffer time
+    if (InputManager.JumpWasPressed && wallJumpPostBufferTimer >0f )
+    {
+        InitiateWallJump();
     }
 
-#endregion
+}
 
+private void InitiateWallJump()
+{
+    if(!isWallJumping)
+    {
+        isWallJumping = true;
+        useWallJumpMoveStats = true;
+
+    }
+
+    StopWallSlide();
+    ResetJumpValues();
+    wallJumpTime = 0f;
+    VerticalVelocity = MoveStats.InitialWallJumpVelocity;
+
+    int dirMultiplier = 0;
+    Vector2 hitPoint = lastWallHit.collider.ClosestPoint(bodyCol.bounds.center);
+
+    if (hitPoint.x > transform.position.x)
+    {
+        dirMultiplier = -1;
+
+    }
+    else {dirMultiplier = 1;}
+    HorizontalVelocity = Mathf.Abs(MoveStats.WallJumpDirection.x) * dirMultiplier;
+}
+private void WallJump()
+{
+    //apply wall jump gravity
+    if(isWallJumping)
+    {
+        //time to take over movement controls while wall jumping
+        wallJumpTime += Time.fixedDeltaTime;
+        if (wallJumpTime >= MoveStats.TimeTillJumpApex)
+        {
+            useWallJumpMoveStats = false;
+
+        }
+        //hit head
+        if (bumpedHead)
+        {
+            isWallJumpFastFalling = true;
+            useWallJumpMoveStats = false;
+        }
+        //gravity in ascending
+
+        if(VerticalVelocity >= 0f)
+        {
+            //apex controls
+            wallJumpApexPoint = Mathf.InverseLerp(MoveStats.WallJumpDirection.y, 0f, VerticalVelocity);
+            if(wallJumpApexPoint > MoveStats.ApexThreshold)
+            {
+                if(!isPastWallJumpApexThreshold)
+                {
+                    isPastWallJumpApexThreshold = true;
+                    timePastWallJumpApexThreshold = 0f;
+
+                }
+                if(isPastWallJumpApexThreshold)
+                {
+                    timePastWallJumpApexThreshold += Time.fixedDeltaTime;
+                    if(timePastWallJumpApexThreshold < MoveStats.ApexHangTime)
+                    {
+                        VerticalVelocity = 0f;
+                    }
+                    else
+                    {
+                        VerticalVelocity = -0.01f;
+                    }
+                }
+            }
+
+            //gravity in ascending but not past apex threshold
+            else if (!isWallJumpFastFalling)
+            {
+                VerticalVelocity += MoveStats.WallJumpGravity * Time.fixedDeltaTime;
+                if (isPastWallJumpApexThreshold)
+                {
+                    isPastWallJumpApexThreshold = false;
+                }
+            }
+        }
+
+        //gravity on descending
+        else if (!isWallJumpFastFalling)
+        {
+            VerticalVelocity += MoveStats.WallJumpGravity * Time.fixedDeltaTime;
+        }
+        else if (VerticalVelocity < 0f)
+        {
+            if (!isWallJumpFalling)
+            {
+                isWallJumpFalling = true;
+            }
+        }
+
+        //handle wall jump cut time
+        if(isWallJumpFastFalling)
+        {
+            if(wallJumpFastFallTime >= MoveStats.TimeForUpwardsCancel)
+            {
+                VerticalVelocity += MoveStats.WallJumpGravity*MoveStats.WallJumpGravityOnReleaseMultiplier * Time.fixedDeltaTime;
+            }
+            else if (wallJumpFastFallTime < MoveStats.TimeForUpwardsCancel)
+            {
+                VerticalVelocity = Mathf.Lerp(wallJumpFastFallReleaseSpeed, 0f, (wallJumpFastFallTime/MoveStats.TimeForUpwardsCancel));
+
+            }
+            wallJumpFastFallTime += Time.fixedDeltaTime;
+        }
+    }
+
+}
+
+private bool ShouldApplyPostWallJumpBuffer()
+{
+    if(!isGrounded &&(isTouchingWall || isWallSliding))
+    {
+        return true;
+    }
+    else {return false;}
+}
+private void ResetWallJumpValues()
+{
+    isWallSlideFalling = false;
+    useWallJumpMoveStats = false;
+    isWallJumping = false;
+    isWallJumpFastFalling = false;
+    isWallJumpFalling = false;
+    isPastWallJumpApexThreshold = false;
+
+    wallJumpFastFallTime = 0f;
+    wallJumpTime = 0f;
+
+}
+
+#endregion
+#region dash
+
+private void ResetDashValues()
+{
+    isDashFastFalling = false;
+    dashOnGroundTimer = -0.01f;
+
+}
+
+private void ResetDashes()
+{
+    numberOfDashesUsed = 0;
+}
+#endregion
 #region Collision Checks
     private void IsGrounded()
     {
@@ -416,7 +720,7 @@ private void Jump()
             Debug.DrawRay(new Vector2(boxCastOrigin.x + boxCastSize.x/2, boxCastOrigin.y), Vector2.down * MoveStats.GroundDetectionRayLength, rayColor);
             Debug.DrawRay(new Vector2(boxCastOrigin.x - boxCastSize.x/2, boxCastOrigin.y - MoveStats.GroundDetectionRayLength), Vector2.right * boxCastSize, rayColor);
         }
-        #endregion */
+         */
 
 
 
@@ -436,10 +740,69 @@ private void Jump()
     }
 
 
+    private void IsTouchingWall()
+    {
+        float originEndPoint = 0f;
+        if(isFacingRight)
+        {
+            originEndPoint = bodyCol.bounds.max.x;
+
+        }
+        else {originEndPoint = bodyCol.bounds.min.x;}
+        float adjustedHeight = bodyCol.bounds.size.y * MoveStats.WallDetectionRayHeightMultilpier;
+
+        Vector2 boxCastOrigin = new Vector2(originEndPoint, bodyCol.bounds.center.y);
+        Vector2 boxCastSize = new Vector2(MoveStats.WallDetectionRayLength, adjustedHeight);
+
+        wallHit = Physics2D.BoxCast(boxCastOrigin, boxCastSize, 0f, transform.right, MoveStats.WallDetectionRayLength, MoveStats.GroundLayer);
+        if (wallHit.collider != null)
+        {
+            lastWallHit = wallHit;
+            isTouchingWall = true;
+        }
+        else { isTouchingWall =false;}
+
+        #region Debug Visualization
+
+        if(MoveStats.DebugShowWallHitBox)
+        {
+            Color raycolor;
+            if(isTouchingWall)
+            {
+                //rayColor = Color.green;
+
+            }
+            else
+            {
+
+            }
+
+            Vector2 boxBottomLeft = new Vector2(boxCastOrigin.x - boxCastSize.x/2, boxCastOrigin.y - boxCastSize.y/2);
+            Vector2 boxBottomRight = new Vector2(boxCastOrigin.x + boxCastSize.x/2, boxCastOrigin.y - boxCastSize.y/2);
+            Vector2 boxTopLeft = new Vector2(boxCastOrigin.x - boxCastSize.x/2, boxCastOrigin.y + boxCastSize.y/2);
+            Vector2 boxTopRight = new Vector2(boxCastOrigin.x + boxCastSize.x/2, boxCastOrigin.y + boxCastSize.y/2);
+
+            Debug.DrawLine(boxBottomLeft, boxBottomRight, Color.green);
+            Debug.DrawLine(boxBottomRight, boxTopRight, Color.green);
+            Debug.DrawLine(boxTopRight, boxTopLeft, Color.green);
+            Debug.DrawLine(boxTopLeft, boxBottomLeft, Color.green);
+            
+
+
+
+
+        }
+
+        #endregion
+
+    }
+
+
     private void CollisionChecks()
     {
         IsGrounded();
         BumpedHead();
+        IsTouchingWall();
 
     }
 
