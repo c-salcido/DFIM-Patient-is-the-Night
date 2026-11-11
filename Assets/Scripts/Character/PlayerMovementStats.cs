@@ -56,8 +56,8 @@ public class PlayerMovementStats : ScriptableObject
     [Header("Jump Coyote Time")]
     [Range(0f, 1f)] public float JumpCoyoteTime = 0.1f;
 
-    [Header("Wall Slide")]
-    [Min(0.01f)] public float WallSlideSpeed = 5f;
+    [Header("Wall SLide")]
+    [Min(0.01f)] public float WallSLideSpeed = 5f;
     [Range(0.25f, 50f)] public float WallSlideDeccelerationSpeed = 50f;
 
     [Header("Wall Jump")]
@@ -84,7 +84,6 @@ public class PlayerMovementStats : ScriptableObject
     [Header("Debug")]
     public bool DebugShowIsGroundedBox;
     public bool DebugShowHeadBumpBox;
-    public bool DebugShowWallHitBox;
 
     [Header("Jump Visualization Tool")]
     public bool ShowWalkJumpArc = false;
