@@ -26,7 +26,7 @@ public class CameraRegister : MonoBehaviour
     private void FollowPlayer()
     {
         var cam = GetComponent<CinemachineVirtualCamera>();
-        cam.Follow = FindObjectOfType<CharacterController2D>().transform;
+        //cam.Follow = FindObjectOfType<CharacterController2D>().transform;
 
     }
     private void OnDisable()
