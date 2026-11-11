@@ -24,7 +24,7 @@ public class DialogueManager : MonoBehaviour
 
 
     //character controller
-    //public CharacterController2D controller;
+    public CharacterController2D controller;
 
     // Start is called before the first frame update
     void Start()
