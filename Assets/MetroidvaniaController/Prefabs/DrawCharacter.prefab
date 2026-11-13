@@ -88,50 +88,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783f8b7882d2d2a42a5b76de9179978f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_JumpForce: 850
-  m_MovementSmoothing: 0.05
-  m_AirControl: 1
-  m_WhatIsGround:
+  view: {fileID: 114145887554720856}
+  attack: {fileID: 114435281327171648}
+  groundCheck: {fileID: 4291727345091452}
+  wallCheck: {fileID: 4986330650710208}
+  whatIsGround:
     serializedVersion: 2
     m_Bits: 53
-  m_GroundCheck: {fileID: 4291727345091452}
-  m_WallCheck: {fileID: 4986330650710208}
-  canDoubleJump: 0
-  m_DashForce: 25
-  life: 10
-  invincible: 0
-  particleJumpUp: {fileID: 198584872278178884}
-  particleJumpDown: {fileID: 198967111524372206}
-  OnFallEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114145887554720856}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnFall
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnLandEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 114145887554720856}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnLanding
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  checkRadius: 0.2
+  input:
+    horizontalAxis: Horizontal
+    verticalAxis: Vertical
+    jumpKey: 122
+    dashKey: 99
+    attackKey: 120
+    throwKey: 118
+  moveSpeed: 8
+  movementSmoothing: 0.05
+  airControl: 1
+  maxFallSpeed: 25
+  jumpForce: 850
+  airJumpMultiplier: 0.83
+  maxAirJumps: 1
+  coyoteTime: 0.1
+  jumpBufferTime: 0.1
+  wallSlideSpeed: 5
+  wallJumpForce: {x: 1020, y: 850}
+  wallJumpControlLock: 0.15
+  wallRefillsAirJump: 1
+  dashSpeed: 25
+  dashDuration: 0.4
+  dashCooldown: 0.5
+  rollHeightFactor: 0.5
+  maxHealth: 10
+  knockbackForce: 400
+  hurtStunTime: 0.25
+  hurtInvincibleTime: 1
+  startingAbilities: 0100000002000000
 --- !u!114 &114435281327171648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,12 +137,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9955788a5eaffa49a9297f38eaa6202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dmgValue: 4
-  throwableObject: {fileID: 5532974359214069763, guid: 340067e8e5a097546ad175f1d00a6ece, type: 3}
+  damage: 4
+  meleeRadius: 0.9
+  meleeCooldown: 0.25
   attackCheck: {fileID: 4370582630649528}
-  animator: {fileID: 95975118031919256}
-  canAttack: 1
-  isTimeToCheck: 0
+  throwableObject: {fileID: 5532974359214069763, guid: 340067e8e5a097546ad175f1d00a6ece, type: 3}
   cam: {fileID: 0}
 --- !u!114 &114145887554720856
 MonoBehaviour:
@@ -163,9 +155,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8644d33345e77614ba3ace9c18398d0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 114231493902538710}
   animator: {fileID: 95975118031919256}
-  runSpeed: 40
+  spriteRenderer: {fileID: 0}
+  jumpTrailParticles: {fileID: 0}
+  landingDustParticles: {fileID: 0}
 --- !u!212 &212971026275759962
 SpriteRenderer:
   m_ObjectHideFlags: 0
