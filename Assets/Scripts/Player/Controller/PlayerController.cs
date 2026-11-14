@@ -131,8 +131,25 @@ public class PlayerController : MonoBehaviour
         respawnPosition = transform.position;
     }
 
-    private void OnEnable() => SceneManager.sceneLoaded += HandleSceneLoaded;
-    private void OnDisable() => SceneManager.sceneLoaded -= HandleSceneLoaded;
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+
+
+        DialoguePresenter.DialogueStarted += HandleDialogueStarted;
+        DialoguePresenter.DialogueEnded += HandleDialogueEnded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        DialoguePresenter.DialogueStarted -= HandleDialogueStarted;
+        DialoguePresenter.DialogueEnded -= HandleDialogueEnded;
+    }
+
+    private void HandleDialogueStarted() => SetControlEnabled(false);
+    private void HandleDialogueEnded() => SetControlEnabled(true);
+
 
     private void OnDestroy()
     {

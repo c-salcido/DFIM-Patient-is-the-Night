@@ -8,6 +8,11 @@ public class DialoguePresenter : MonoBehaviour
 {
     public static DialoguePresenter Instance { get; private set; }
 
+    public static event System.Action DialogueStarted;
+    public static event System.Action DialogueEnded;
+
+
+
     [SerializeField] private DialogueView view;
 
     private readonly DialogueModel model = new DialogueModel();
@@ -26,16 +31,29 @@ public class DialoguePresenter : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this)
+        if(model.IsActive)
+        {
+            model.End();
+            DialogueEnded?.Invoke();
+        }
+        if(Instance == this)
             Instance = null;
+
     }
 
     public void StartDialogue(Dialogue dialogue)
     {
+        bool wasOpen = model.IsActive;
+
         model.Begin(dialogue);
         view.Show(dialogue.name);
         view.PlayVoice(dialogue.audio);
+
+        if(!wasOpen)
+            DialogueStarted?.Invoke();
+
         DisplayNextSentence();
+
     }
 
     // Hooked up to the button in the dialogue box (method name kept so the button still works).
@@ -52,7 +70,11 @@ public class DialoguePresenter : MonoBehaviour
 
     public void EndDialogue()
     {
+         if (!model.IsActive)
+            return;
+
         model.End();
         view.Hide();
+        DialogueEnded?.Invoke();
     }
 }
