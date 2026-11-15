@@ -29188,7 +29188,7 @@ Transform:
   m_GameObject: {fileID: 469987460}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 74.5, y: 6.7, z: 0}
+  m_LocalPosition: {x: 62.3, y: -12.6, z: 0}
   m_LocalScale: {x: 2.98748, y: 3.34231, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -29214,7 +29214,8 @@ MonoBehaviour:
     animator: {fileID: 0}
     animation: 
     sentences:
-    - Her sister's GameCube. She always makes her be player 2
+    - 'it looks like a.. '
+    - 'I can''t tell actually. I can''t see past the darkness '
 --- !u!114 &469987463
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31415,7 +31416,7 @@ Transform:
   m_GameObject: {fileID: 754047421}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 62.25, y: -12.56, z: 0}
+  m_LocalPosition: {x: 72.3, y: 6.8, z: 0}
   m_LocalScale: {x: 2.98748, y: 3.34231, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -89667,7 +89668,7 @@ MonoBehaviour:
     animator: {fileID: 0}
     animation: 
     sentences:
-    - Her sister's GameCube. She always makes her be player 2
+    - My sister's GameCube. She always makes me player 2..
 --- !u!61 &1189905411
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -97317,7 +97318,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1515828063
 RectTransform:
   m_ObjectHideFlags: 0
@@ -176230,7 +176231,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7977001913383218726, guid: 76092bc81e0294a35a9f918e26d78f1f, type: 3}
       propertyPath: orthographic size
-      value: 8
+      value: 5.45
       objectReference: {fileID: 0}
     - target: {fileID: 8039763959811958234, guid: 76092bc81e0294a35a9f918e26d78f1f, type: 3}
       propertyPath: m_LocalPosition.y
